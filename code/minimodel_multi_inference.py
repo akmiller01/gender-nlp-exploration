@@ -15,6 +15,109 @@ DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 MODEL = AutoModelForSequenceClassification.from_pretrained("alex-miller/iati-gender-multi-classifier-weighted-minitest")
 MODEL = MODEL.to(DEVICE)
 
+gender_keywords = [
+    'abuse',
+    'abused',
+    'adolescent',
+    'adolescents',
+    'aids',
+    'antirotavirus',
+    'bodies',
+    'body',
+    'boys',
+    'care',
+    'cedaw', # Convention on the Elimination of All Forms of Discrimination Against Women
+    'child',
+    'childhood',
+    'children',
+    'daughter',
+    'equality',
+    'exploitation',
+    'exploited',
+    'familien',
+    'families',
+    'family',
+    'female',
+    'feminism',
+    'feminist',
+    'femmes',
+    'force',
+    'forced',
+    'frauenrechten',
+    'garçons',
+    'gbv', # gender-based violence
+    'gender',
+    'genital',
+    'genitals',
+    'girl',
+    'girls',
+    'haemophilius',
+    'haemophilus',
+    'hiv',
+    'inequality',
+    'jeunes',
+    'könsbaserat',
+    'masculine',
+    'masculinity',
+    'maternal',
+    'menstrual',
+    'menstruation',
+    'misogyny',
+    'mother',
+    'mothers',
+    'normative',
+    'pad',
+    'pads',
+    'patriarchy',
+    'period',
+    'periods',
+    'rape',
+    'raped',
+    'reproduce',
+    'reproductive',
+    'sanitary',
+    'sex',
+    'sexism',
+    'sexospécifique',
+    'sexual',
+    'sexueller',
+    'son',
+    'stem', # Science, technology, engineering and maths?
+    'tampon',
+    'tampons',
+    'tgnp', # Tanzania Gender Networking Programme
+    'ungdomar',
+    'unwomen',
+    'uterus',
+    'utérus',
+    'vaw', # violence against women
+    'violence',
+    'violent',
+    'woman',
+    'women',
+    'wps', # women peace security
+    'young',
+    'youth',
+    'youths'
+]
+
+gender_regex_string = '|'.join([r'\b%s\b' % word for word in gender_keywords])
+GENDER_REGEX = re.compile(gender_regex_string, re.I)
+
+
+def remove_string_special_characters(s):
+    # removes special characters with ' '
+    stripped = re.sub(r'[^\w\s]', ' ', s)
+
+    # Change any white space to one space
+    stripped = re.sub('\s+', ' ', stripped)
+
+    # Remove start and end white spaces
+    stripped = stripped.strip()
+    if stripped != '':
+        return stripped.lower()
+
+
 
 def sigmoid(x):
    return 1/(1 + np.exp(-x))
@@ -44,6 +147,7 @@ def inference(model, inputs):
 
 def map_columns(example):
     text = example['text']
+    clean_text = remove_string_special_characters(text)
 
     predictions = {
         "Gender equality - significant objective": [False, 0],
@@ -52,6 +156,7 @@ def map_columns(example):
     keyword_match = False
 
     if text is not None:
+        keyword_match = GENDER_REGEX.search(clean_text) is not None
         text_chunks = chunk_by_tokens(text)
         for text_chunk in text_chunks:
             inputs = TOKENIZER(text_chunk, return_tensors="pt", truncation=True).to(DEVICE)
@@ -65,6 +170,7 @@ def map_columns(example):
     example['Gender equality - significant objective confidence'] = predictions['Gender equality - significant objective'][1]
     example['Gender equality - principal objective predicted'] = predictions['Gender equality - principal objective'][0]
     example['Gender equality - principal objective confidence'] = predictions['Gender equality - principal objective'][1]
+    example['Gender keyword match'] = keyword_match
     return example
 
 def main():
