@@ -12,7 +12,7 @@ global DEVICE
 global MODEL
 TOKENIZER = AutoTokenizer.from_pretrained('alex-miller/ODABert', model_max_length=512)
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
-MODEL = AutoModelForSequenceClassification.from_pretrained("iati-gender-multi-classifier-weighted")
+MODEL = AutoModelForSequenceClassification.from_pretrained("alex-miller/iati-gender-multi-classifier-weighted-minitest")
 MODEL = MODEL.to(DEVICE)
 
 
