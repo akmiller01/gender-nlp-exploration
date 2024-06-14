@@ -3,7 +3,6 @@ import torch
 import numpy as np
 import pandas as pd
 from datasets import Dataset, load_dataset
-import math
 import re
 
 
@@ -14,6 +13,7 @@ TOKENIZER = AutoTokenizer.from_pretrained('alex-miller/ODABert', model_max_lengt
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 MODEL = AutoModelForSequenceClassification.from_pretrained("alex-miller/iati-gender-multi-classifier-weighted-minitest")
 MODEL = MODEL.to(DEVICE)
+
 
 gender_keywords = [
     'abuse',
@@ -118,22 +118,8 @@ def remove_string_special_characters(s):
         return stripped.lower()
 
 
-
 def sigmoid(x):
    return 1/(1 + np.exp(-x))
-
-
-def chunk_by_tokens(input_text, model_max_size=512):
-    chunks = list()
-    tokens = TOKENIZER.encode(input_text)
-    token_length = len(tokens)
-    if token_length <= model_max_size:
-        return [input_text]
-    desired_number_of_chunks = math.ceil(token_length / model_max_size)
-    calculated_chunk_size = math.ceil(token_length / desired_number_of_chunks)
-    for i in range(0, token_length, calculated_chunk_size):
-        chunks.append(TOKENIZER.decode(tokens[i:i + calculated_chunk_size]))
-    return chunks
 
 
 def inference(model, inputs):
@@ -145,32 +131,18 @@ def inference(model, inputs):
 
     return predicted_classes, predicted_confidences
 
+
 def map_columns(example):
     text = example['text']
     clean_text = remove_string_special_characters(text)
+    example['Gender keyword match'] = GENDER_REGEX.search(clean_text) is not None
 
-    predictions = {
-        "Gender equality - significant objective": [False, 0],
-        "Gender equality - principal objective": [False, 0],
-    }
-    keyword_match = False
-
-    if text is not None:
-        keyword_match = GENDER_REGEX.search(clean_text) is not None
-        text_chunks = chunk_by_tokens(text)
-        for text_chunk in text_chunks:
-            inputs = TOKENIZER(text_chunk, return_tensors="pt", truncation=True).to(DEVICE)
-            model_pred, model_conf = inference(MODEL, inputs)
-            predictions['Gender equality - significant objective'][0] = predictions['Gender equality - significant objective'][0] or model_pred[0]
-            predictions['Gender equality - significant objective'][1] = max(predictions['Gender equality - significant objective'][1], model_conf[0])
-            predictions['Gender equality - principal objective'][0] = predictions['Gender equality - principal objective'][0] or model_pred[1]
-            predictions['Gender equality - principal objective'][1] = max(predictions['Gender equality - principal objective'][1], model_conf[1])
-        
-    example['Gender equality - significant objective predicted'] = predictions['Gender equality - significant objective'][0]
-    example['Gender equality - significant objective confidence'] = predictions['Gender equality - significant objective'][1]
-    example['Gender equality - principal objective predicted'] = predictions['Gender equality - principal objective'][0]
-    example['Gender equality - principal objective confidence'] = predictions['Gender equality - principal objective'][1]
-    example['Gender keyword match'] = keyword_match
+    inputs = TOKENIZER(text, return_tensors="pt", truncation=True).to(DEVICE)
+    model_pred, model_conf = inference(MODEL, inputs)
+    example['Gender equality - significant objective predicted'] = model_pred[0]
+    example['Gender equality - significant objective confidence'] = model_conf[0]
+    example['Gender equality - principal objective predicted'] = model_pred[1]
+    example['Gender equality - principal objective confidence'] = model_conf[1]
     return example
 
 def main():
