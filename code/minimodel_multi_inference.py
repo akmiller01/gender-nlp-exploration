@@ -174,7 +174,6 @@ def map_columns(example):
     return example
 
 def main():
-    text_cols = ['text']
     dataset = load_dataset("devinitorg/iati-policy-markers", split="train")
 
     dataset = dataset.filter(lambda example: example["gender_equality"])
@@ -192,11 +191,8 @@ def main():
     print(df.shape)
     dataset = Dataset.from_pandas(df, preserve_index=False)
 
-    dataset_text = dataset[text_cols]
-    dataset_text = Dataset.from_pandas(dataset_text)
-    dataset_text = dataset_text.map(map_columns, remove_columns=text_cols)
-    dataset_text = pd.DataFrame(dataset_text)
-    dataset = pd.concat([dataset.reset_index(drop=True), dataset_text.reset_index(drop=True)], axis=1)
+    dataset = dataset.map(map_columns)
+    dataset = pd.DataFrame(dataset)
     dataset.to_csv('large_data/iati_predictions.csv', index=False)
 
 
