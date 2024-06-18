@@ -130,10 +130,9 @@ clf_metrics = evaluate.combine(["accuracy", "f1", "precision", "recall"])
 def compute_metrics(eval_pred):
     predictions, labels = eval_pred
     predictions = np.argmax(predictions, axis=1)
-    return clf_metrics.compute(predictions=predictions, references=labels)
+    return clf_metrics.compute(predictions=predictions, references=labels, average='macro')
 
-
-tokenized_data = dataset.map(preprocess_function)
+tokenized_data = dataset.map(preprocess_function, remove_columns=["text"])
 
 model = AutoModelForSequenceClassification.from_pretrained(
     card,
@@ -148,8 +147,8 @@ model.class_weights = weights
 training_args = TrainingArguments(
     'curated-gender-equality-weighted',
     learning_rate=1e-6, # This can be tweaked depending on how loss progresses
-    per_device_train_batch_size=16, # These should be tweaked to match GPU VRAM
-    per_device_eval_batch_size=16,
+    per_device_train_batch_size=24, # These should be tweaked to match GPU VRAM
+    per_device_eval_batch_size=24,
     num_train_epochs=10,
     weight_decay=0.01,
     evaluation_strategy='epoch',
@@ -163,8 +162,8 @@ training_args = TrainingArguments(
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=dataset['train'],
-    eval_dataset=dataset['test'],
+    train_dataset=tokenized_data['train'],
+    eval_dataset=tokenized_data['test'],
     tokenizer=tokenizer,
     data_collator=data_collator,
     compute_metrics=compute_metrics,
