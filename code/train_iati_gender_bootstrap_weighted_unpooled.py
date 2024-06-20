@@ -108,4 +108,4 @@ trainer = Trainer(
 )
 
 trainer.train()
-# trainer.push_to_hub()
+trainer.push_to_hub()

@@ -29,7 +29,6 @@ names(dat) = c(
   "text", "label", "sig_pred", "sig_conf", "pri_pred", "pri_conf"
 )
 
-
 true_negative = subset(
   dat, 
   label == "No gender equality objective" &
@@ -71,4 +70,16 @@ false_pos_pri = subset(
   dat, 
   label != "Principal gender equality objective" &
     pri_pred == "True"
+)
+
+false_pos = subset(
+  dat,
+  label == "No gender equality objective" &
+    (pri_pred == "True" | sig_pred == "True")
+)
+false_neg = subset(
+  dat, 
+  label != "No gender equality objective" &
+    sig_pred == "False" &
+    pri_pred == "False"
 )
