@@ -82,6 +82,10 @@ model = BertForSequenceClassificationUnpooled.from_pretrained(
 )
 model.class_weights = weights
 
+topic = "gender equality"
+topic_inputs = tokenizer(topic, return_tensors="pt", truncation=True, padding='max_length').to(device)
+model.topic_inputs = topic_inputs
+
 training_args = TrainingArguments(
     'curated-gender-equality-weighted-unpooled',
     learning_rate=1e-6, # This can be tweaked depending on how loss progresses

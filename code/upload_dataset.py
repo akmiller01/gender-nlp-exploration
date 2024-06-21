@@ -4,7 +4,12 @@ from dotenv import load_dotenv
 import os
 
 def main():
-    dataset = load_dataset("csv", data_files="./large_data/training_data.csv", split="train")
+    dataset = load_dataset("csv", data_files="./large_data/iati_predictions2_curated.csv", split="train")
+    dataset = dataset.filter(lambda example: example['Remove'] is None)
+    columns_to_remove = dataset.column_names
+    columns_to_remove.remove('text')
+    columns_to_remove.remove('label')
+    dataset = dataset.remove_columns(columns_to_remove)
     dataset = dataset.add_column("class_label", dataset['label'])
     dataset = dataset.class_encode_column('class_label').train_test_split(
         test_size=0.2,

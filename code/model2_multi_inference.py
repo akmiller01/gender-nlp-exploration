@@ -2,7 +2,7 @@ from transformers import AutoModelForSequenceClassification, AutoTokenizer
 import torch
 import numpy as np
 import pandas as pd
-from datasets import load_dataset
+from datasets import load_dataset, concatenate_datasets
 
 
 global TOKENIZER
@@ -40,7 +40,8 @@ def map_columns(example):
     return example
 
 def main():
-    dataset = load_dataset("alex-miller/curated-iati-gender-equality", split="test")
+    dataset = load_dataset("alex-miller/curated-iati-gender-equality")
+    dataset = concatenate_datasets([dataset['train'], dataset['test']])
     dataset = dataset.map(map_columns)
     dataset = pd.DataFrame(dataset)
     dataset.to_csv('large_data/iati_predictions2.csv', index=False)
