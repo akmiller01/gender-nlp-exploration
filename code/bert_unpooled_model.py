@@ -65,10 +65,13 @@ class BertForSequenceClassificationUnpooled(BertPreTrainedModel):
             if self.topic_inputs is None:
                 raise Exception("This model requires a topic to rank unpooled embeddings.")
             with torch.no_grad():
-                self.topic_embedding = self.bert(**self.topic_inputs).pooler_output.expand(batch_size, self.config.max_position_embeddings, self.config.hidden_size)
+                self.topic_embedding = self.bert(**self.topic_inputs).pooler_output
+
+        # Expand topic_embedding to match the dimensions for broadcasting
+        topic_embedding_expanded = self.topic_embedding.expand(batch_size, self.config.max_position_embeddings, self.config.hidden_size)
 
         # Compute cosine similarity
-        cos_sim = F.cosine_similarity(last_hidden_state, self.topic_embedding, dim=-1)
+        cos_sim = F.cosine_similarity(last_hidden_state, topic_embedding_expanded, dim=-1)
 
         # Sort by cosine similarity
         sorted_indices = torch.argsort(cos_sim, dim=1, descending=True)
