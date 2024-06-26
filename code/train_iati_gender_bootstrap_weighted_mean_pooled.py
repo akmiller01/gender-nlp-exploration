@@ -84,10 +84,10 @@ model.class_weights = weights
 
 training_args = TrainingArguments(
     'curated-gender-equality-weighted-mean-pooled',
-    learning_rate=2e-6, # This can be tweaked depending on how loss progresses
-    per_device_train_batch_size=24, # These should be tweaked to match GPU VRAM
-    per_device_eval_batch_size=24,
-    num_train_epochs=5,
+    learning_rate=1e-6, # This can be tweaked depending on how loss progresses
+    per_device_train_batch_size=32, # These should be tweaked to match GPU VRAM
+    per_device_eval_batch_size=32,
+    num_train_epochs=20,
     weight_decay=0.01,
     evaluation_strategy='epoch',
     save_strategy='epoch',
