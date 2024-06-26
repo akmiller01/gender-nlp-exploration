@@ -1,13 +1,14 @@
 from transformers.models.bert.modeling_bert import BertModel, BertPreTrainedModel
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Tuple, Union
 
 
 
-class BertForSequenceClassificationMeanPooled(BertPreTrainedModel):
+class BertForSequenceClassificationPooledNormalized(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
         self.num_labels = config.num_labels
@@ -55,12 +56,11 @@ class BertForSequenceClassificationMeanPooled(BertPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        last_hidden_state = outputs.last_hidden_state
 
-        mean_pooled_output = last_hidden_state.mean(dim=1)
-
-        mean_pooled_output = self.dropout(mean_pooled_output)
-        logits = self.classifier(mean_pooled_output)
+        pooled_output = outputs.pooler_output
+        normalized_pooled_output = F.normalize(pooled_output, p=2, dim=1)        
+        normalized_pooled_output = self.dropout(normalized_pooled_output)
+        logits = self.classifier(normalized_pooled_output)
 
         loss = None
         if labels is not None:
