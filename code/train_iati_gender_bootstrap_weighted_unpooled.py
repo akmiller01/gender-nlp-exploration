@@ -82,16 +82,12 @@ model = BertForSequenceClassificationUnpooled.from_pretrained(
 )
 model.class_weights = weights
 
-topic = "gender equality"
-topic_inputs = tokenizer(topic, return_tensors="pt", truncation=True, padding='max_length').to(device)
-model.topic_inputs = topic_inputs
-
 training_args = TrainingArguments(
     'curated-gender-equality-weighted-unpooled',
     learning_rate=1e-6, # This can be tweaked depending on how loss progresses
-    per_device_train_batch_size=8, # These should be tweaked to match GPU VRAM
-    per_device_eval_batch_size=8,
-    num_train_epochs=10,
+    per_device_train_batch_size=24, # These should be tweaked to match GPU VRAM
+    per_device_eval_batch_size=24,
+    num_train_epochs=20,
     weight_decay=0.01,
     evaluation_strategy='epoch',
     save_strategy='epoch',

@@ -1,7 +1,6 @@
 from transformers.models.bert.modeling_bert import BertModel, BertPreTrainedModel
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from transformers.modeling_outputs import SequenceClassifierOutput
 from typing import Optional, Tuple, Union
@@ -11,7 +10,6 @@ from typing import Optional, Tuple, Union
 class BertForSequenceClassificationUnpooled(BertPreTrainedModel):
     def __init__(self, config):
         super().__init__(config)
-        self.topic_embedding = None
         self.num_labels = config.num_labels
         self.config = config
 
@@ -58,28 +56,9 @@ class BertForSequenceClassificationUnpooled(BertPreTrainedModel):
             output_hidden_states=output_hidden_states,
             return_dict=return_dict,
         )
-        last_hidden_state = outputs.last_hidden_state
-        batch_size = last_hidden_state.shape[0]
+        batch_size = outputs.last_hidden_state.shape[0]
 
-        if self.topic_embedding is None:
-            if self.topic_inputs is None:
-                raise Exception("This model requires a topic to rank unpooled embeddings.")
-            with torch.no_grad():
-                self.topic_embedding = self.bert(**self.topic_inputs).pooler_output
-
-        # Expand topic_embedding to match the dimensions for broadcasting
-        topic_embedding_expanded = self.topic_embedding.expand(batch_size, self.config.max_position_embeddings, self.config.hidden_size)
-
-        # Compute cosine similarity
-        cos_sim = F.cosine_similarity(last_hidden_state, topic_embedding_expanded, dim=-1)
-
-        # Sort by cosine similarity
-        sorted_indices = torch.argsort(cos_sim, dim=1, descending=True)
-
-        # Gather the sorted last_hidden_state
-        sorted_last_hidden_state = torch.gather(last_hidden_state, 1, sorted_indices.unsqueeze(-1).expand(-1, -1, 768))
-
-        unpooled_output = sorted_last_hidden_state.view(1, -1).reshape(batch_size, self.classifier_input_size)
+        unpooled_output = outputs.last_hidden_state.view(1, -1).reshape(batch_size, self.classifier_input_size)
 
         unpooled_output = self.dropout(unpooled_output)
         logits = self.classifier(unpooled_output)
