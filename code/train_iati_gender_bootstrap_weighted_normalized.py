@@ -93,7 +93,7 @@ training_args = TrainingArguments(
     save_strategy='epoch',
     logging_strategy='epoch',
     load_best_model_at_end=True,
-    push_to_hub=False,
+    push_to_hub=True,
     save_total_limit=5,
 )
 
