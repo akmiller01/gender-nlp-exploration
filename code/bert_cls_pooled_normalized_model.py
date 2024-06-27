@@ -58,7 +58,7 @@ class BertForSequenceClassificationPooledNormalized(BertPreTrainedModel):
         )
 
         pooled_output = outputs.pooler_output
-        normalized_pooled_output = F.normalize(pooled_output, p=2, dim=1)        
+        normalized_pooled_output = F.normalize(pooled_output, p=2, dim=1)
         normalized_pooled_output = self.dropout(normalized_pooled_output)
         logits = self.classifier(normalized_pooled_output)
 
