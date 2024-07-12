@@ -44,7 +44,7 @@ crs_agg_donor_recip = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_defl
   year, donor_name, recipient_name, `Principal gender equality`, `Principal all climate`, `Principal disability`
 )]
 
-fwrite(crs_agg, "data/crs_triple_overlap_disagg.csv")
+fwrite(crs_agg_donor_recip, "data/crs_triple_overlap_disagg.csv")
 
 setnames(crs_agg,
   c("Principal gender equality", "Principal all climate", "Principal disability"),
