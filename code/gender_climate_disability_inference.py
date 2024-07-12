@@ -435,23 +435,45 @@ climate_keywords = [
 disability_keywords = [
     'accessible',
     'accessibility',
+    'albino', # new
+    'albinism', # new
+    'autism', # new
+    'autistic', # new
     'blind',
     'blindness',
+    'chronic', # new
     'deaf',
     'deafness',
+    'déficience', # new
+    'deformity', # new
+    'deformities', # new
+    'difficult', # new
+    'difficulty', # new
+    'difficulties', # new
     'dignified',
     'disabilitazione',
     'disabilities',
     'disability',
+    'disable', # new
     'disabled',
     'discrimination',
+    'eye', # new
+    'eyes', # new
     'handicap',
     'handicapped',
+    'handicapés', # new
+    'handicapées', # new
     'hearing',
+    'helpage', # new
+    'impaired', # new
+    'impairment', # new
+    'impairments', # new
     'inclusion',
+    'inclusive', # new
     'marginalization',
     'marginalized',
     'mental',
+    'parkinson', # new
     'physical',
     'precondition',
     'seeing',
