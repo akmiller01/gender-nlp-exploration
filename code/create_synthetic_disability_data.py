@@ -174,7 +174,7 @@ if __name__ == '__main__':
         synthetic_texts = list()
         for i, user_prompt in tqdm(enumerate(dataset_train["text"]), total=dataset_train.num_rows):
             system_prompt = dataset_train["system_prompt"][i]
-            label = dataset_train["labels"][i]
+            label = dataset_train["label"][i]
 
             messages = [
                 {"role": "system", "content": system_prompt},
@@ -194,7 +194,7 @@ if __name__ == '__main__':
 
         synthetic_dataset = Dataset.from_dict({
             'text': synthetic_texts,
-            'labels': synthetic_labels
+            'label': synthetic_labels
         })
         dataset['train'] = concatenate_datasets([dataset['train'], synthetic_dataset])
         dataset.push_to_hub("alex-miller/iati-disability-synthetic")
