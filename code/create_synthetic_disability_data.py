@@ -8,6 +8,7 @@ from tqdm import tqdm
 from huggingface_hub import login
 import re
 from collections import Counter
+import pandas as pd
 
 
 load_dotenv()
@@ -119,6 +120,13 @@ if __name__ == '__main__':
     dataset = dataset.filter(lambda example: example["disability_sig"] in [1, 2])
     dataset = dataset.filter(lambda example: example["text"] != "" and example["text"] is not None and len(example["text"]) > 10)
     dataset = dataset.filter(lambda example: filter_keyword_match(example))
+
+    # De-duplicate
+    df = pd.DataFrame(dataset)
+    print(df.shape)
+    df = df.drop_duplicates(subset=['text'])
+    print(df.shape)
+    dataset = Dataset.from_pandas(df, preserve_index=False)
 
     def relabel(example):
         if example['disability_sig'] == 1:
