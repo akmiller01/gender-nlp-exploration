@@ -6,6 +6,8 @@ import click
 from datasets import load_dataset, concatenate_datasets, Dataset
 from tqdm import tqdm
 from huggingface_hub import login
+import re
+from collections import Counter
 
 
 load_dotenv()
@@ -15,8 +17,83 @@ client = OpenAI(
 HF_TOKEN = os.getenv('HF_TOKEN')
 login(token=HF_TOKEN)
 
+
 MODEL = "gpt-3.5-turbo-0125"
-MULTIPLIER = 5
+MULTIPLIER = 10
+
+
+disability_keywords = [
+    'accessible',
+    'accessibility',
+    'albino',
+    'albinism',
+    'autism',
+    'autistic',
+    'blind',
+    'blindness',
+    'chronic',
+    'deaf',
+    'deafness',
+    'déficience',
+    'deformity',
+    'deformities',
+    'difficult',
+    'difficulty',
+    'difficulties',
+    'dignified',
+    'disabilitazione',
+    'disabilities',
+    'disability',
+    'disable',
+    'disabled',
+    'discrimination',
+    'eye',
+    'eyes',
+    'handicap',
+    'handicapped',
+    'handicapés',
+    'handicapées',
+    'hearing',
+    'helpage',
+    'impaired',
+    'impairment',
+    'impairments',
+    'inclusion',
+    'inclusive',
+    'marginalization',
+    'marginalized',
+    'mental',
+    'parkinson',
+    'physical',
+    'precondition',
+    'seeing',
+    'sight',
+    'stigma',
+    'stigmatisation',
+    'stigmatization',
+    'taboo',
+    'vulnerability',
+    'vulnerable',
+    'wheelchair'
+]
+
+
+disability_regex_string = '|'.join([r'\b%s\b' % word for word in disability_keywords])
+global DISABILITY_REGEX
+DISABILITY_REGEX = re.compile(disability_regex_string, re.I)
+
+
+def remove_string_special_characters(s):
+    # removes special characters with ' '
+    stripped = re.sub(r'[^\w\s]', ' ', s)
+
+    # Change any white space to one space
+    stripped = re.sub('\s+', ' ', stripped)
+
+    # Remove start and end white spaces
+    stripped = stripped.strip()
+    if stripped != '':
+        return stripped.lower()
 
 
 def warn_user_about_tokens(tokenizer, text):
@@ -29,12 +106,19 @@ def warn_user_about_tokens(tokenizer, text):
     )
     , default=False)
 
+
+def filter_keyword_match(example):
+    clean_text = remove_string_special_characters(example['text'])
+    return DISABILITY_REGEX.search(clean_text) is not None
+
+
 if __name__ == '__main__':
 
     dataset = load_dataset("devinitorg/iati-policy-markers", split="train")
 
     dataset = dataset.filter(lambda example: example["disability_sig"] in [1, 2])
     dataset = dataset.filter(lambda example: example["text"] != "" and example["text"] is not None and len(example["text"]) > 10)
+    dataset = dataset.filter(lambda example: filter_keyword_match(example))
 
     def relabel(example):
         if example['disability_sig'] == 1:
@@ -51,10 +135,14 @@ if __name__ == '__main__':
     cols_to_remove.remove("label")
     dataset = dataset.remove_columns(cols_to_remove)
 
+    count = Counter()
+    count.update(dataset['label'])
+    print(count)
+
     dataset = dataset.add_column("class_labels", dataset['label'])
 
     dataset = dataset.class_encode_column('class_labels').train_test_split(
-        test_size=0.5,
+        test_size=0.8,
         stratify_by_column="class_labels",
         shuffle=True,
         seed=42
