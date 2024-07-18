@@ -73,10 +73,9 @@ if __name__ == '__main__':
     def apply_system_prompts(example):
         semantic_label, extra_instructions = semantic_label_mapping[example["label"]]
         example["system_prompt"] = system_prompt_format.format(MULTIPLIER, semantic_label, extra_instructions)
-        import pdb; pdb.set_trace()
         return example
     
-    dataset_train = dataset_train.map(apply_system_prompts)
+    dataset_train = dataset_train.map(apply_system_prompts, num_proc=8)
     all_prompts = " ".join(dataset_train["system_prompt"])
     dataset_texts = " ".join(dataset_train["text"] * (MULTIPLIER + 1))
     all_text = all_prompts + dataset_texts
