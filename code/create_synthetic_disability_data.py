@@ -194,6 +194,7 @@ if __name__ == '__main__':
                     messages=messages
                 )
                 for synthetic_text in response.choices[0].message.content.split("<sep>"):
+                    synthetic_text = synthetic_text.strip()
                     if synthetic_text != '':
                         synthetic_texts.append(synthetic_text)
                         synthetic_labels.append(label)
