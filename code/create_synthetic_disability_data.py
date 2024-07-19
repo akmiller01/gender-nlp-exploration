@@ -19,7 +19,7 @@ HF_TOKEN = os.getenv('HF_TOKEN')
 login(token=HF_TOKEN)
 
 
-MODEL = "gpt-3.5-turbo-0125"
+MODEL = "gpt-4o-mini"
 MULTIPLIER = 10
 
 
@@ -98,7 +98,7 @@ def remove_string_special_characters(s):
 
 
 def warn_user_about_tokens(tokenizer, text):
-    token_cost = 0.5
+    token_cost = 0.15
     cost_per = 1000000
     token_count = len(tokenizer.encode(text))
     return click.confirm(
@@ -164,7 +164,7 @@ if __name__ == '__main__':
         'Significant': ('Significant disability objective', 'Significant means that addressing disability is an important and deliberate objective, but not the principal reason for undertaking the project/programme, often explained as disability being mainstreamed in the project/programme'),
         'Principal': ('Principal disability objective', 'Principal means that addressing disability is the main objective of the project/programme and is fundamental is its design and expected results. The project/programme would not have been undertaken without this objective'),
     }
-    system_prompt_format = "Below is a record from a database of development and humanitarian assistance. I need your help to create synthetic data to train a classifier network. Could you please write {} synthetic records based on the example, separated by new lines, that mirrors it in length, content, vocabulary, language, and theme? The synthetic record should reflect the theme we are trying to classify, which is '{}'. {}. Please only write the synthetic data and no additional text."
+    system_prompt_format = "Below is a record from a database of development and humanitarian assistance. I need your help to create synthetic data to train a classifier network. Could you please write {} synthetic records based on the example, separated by new lines, that mirrors it in length, content, vocabulary, language, and theme? Separate each record with <sep>. The synthetic records should reflect the theme we are trying to classify, which is '{}'. {}. Please only write the synthetic records and no additional text."
 
     def apply_system_prompts(example):
         semantic_label, extra_instructions = semantic_label_mapping[example["label"]]
@@ -193,7 +193,7 @@ if __name__ == '__main__':
                     model=MODEL,
                     messages=messages
                 )
-                for synthetic_text in response.choices[0].message.content.split("\n"):
+                for synthetic_text in response.choices[0].message.content.split("<sep>"):
                     if synthetic_text != '':
                         synthetic_texts.append(synthetic_text)
                         synthetic_labels.append(label)
