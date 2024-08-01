@@ -653,10 +653,15 @@ def main():
         dataset['disability'].isnull()
     ]
     dataset_text = dataset_unscreened[text_cols]
+    # De-duplicate
+    print(dataset_text.shape)
+    dataset_text = dataset_text.drop_duplicates(subset=text_cols)
+    print(dataset_text.shape)
     dataset_text = Dataset.from_pandas(dataset_text)
-    dataset_text = dataset_text.map(map_columns, remove_columns=text_cols)
+    dataset_text = dataset_text.map(map_columns)
     dataset_text = pd.DataFrame(dataset_text)
-    dataset_unscreened = pd.concat([dataset_unscreened.reset_index(drop=True), dataset_text.reset_index(drop=True)], axis=1)
+    dataset_text = dataset_text.astype({'gender': 'float64', 'climate_adaptation': 'float64', 'climate_mitigation': 'float64', 'disability': 'float64'})
+    dataset_unscreened = pd.merge(dataset_unscreened, dataset_text, on=text_cols, how="left")
     dataset = pd.concat([dataset_screened, dataset_unscreened])
     dataset.to_csv('large_data/crs_nonau_for_gender_climate_disability_predictions.csv', index=False)
 
