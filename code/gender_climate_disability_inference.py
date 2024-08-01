@@ -641,7 +641,7 @@ def map_columns(example):
 
 def main():
     text_cols = ['project_title', 'short_description', 'long_description', 'gender', 'climate_adaptation', 'climate_mitigation', 'disability']
-    dataset = pd.read_csv("large_data/crs_for_gender_climate_disability.csv")
+    dataset = pd.read_csv("large_data/crs_nonau_for_gender_climate_disability.csv")
     dataset_screened = dataset[
         dataset['gender'].isin([0, 1, 2]) &
         (dataset['climate_adaptation'].isin([0, 1, 2]) | dataset['climate_mitigation'].isin([0, 1, 2])) &
@@ -658,7 +658,7 @@ def main():
     dataset_text = pd.DataFrame(dataset_text)
     dataset_unscreened = pd.concat([dataset_unscreened.reset_index(drop=True), dataset_text.reset_index(drop=True)], axis=1)
     dataset = pd.concat([dataset_screened, dataset_unscreened])
-    dataset.to_csv('large_data/crs_for_gender_climate_disability_predictions.csv', index=False)
+    dataset.to_csv('large_data/crs_nonau_for_gender_climate_disability_predictions.csv', index=False)
 
 
 if __name__ == '__main__':
