@@ -537,6 +537,8 @@ def inference(model, inputs):
     return predicted_classes, predicted_confidences
 
 def map_columns(example):
+    if example["text"] is None:
+        example["text"] = ""
     text = remove_string_special_characters(example["text"])
 
     predictions = {
