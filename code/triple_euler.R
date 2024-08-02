@@ -31,20 +31,20 @@ greys = c(
   "#6a6569", "#a9a6aa", "#847e84", "#555053", "#443e42", "#d9d4da", "#cac5cb", "#b3b0b7", "#b9b5bb", "#5a545a", "#736e73", "#4e484c", "#302b2e"
 )
 
-crs = fread("large_data/crs_for_gender_climate_disability_automated.csv")
+crs = fread("large_data/crs_nonau_for_gender_climate_disability_automated.csv")
 
 crs_agg = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
   year, `Principal gender equality`, `Principal all climate`, `Principal disability`
 )]
 
 crs_agg$year = as.character(crs_agg$year)
-fwrite(crs_agg, "data/crs_triple_overlap.csv")
+fwrite(crs_agg, "data/crs_nonau_triple_overlap.csv")
 
 crs_agg_donor_recip = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
   year, donor_name, recipient_name, `Principal gender equality`, `Principal all climate`, `Principal disability`
 )]
 
-fwrite(crs_agg_donor_recip, "data/crs_triple_overlap_disagg.csv")
+fwrite(crs_agg_donor_recip, "data/crs_nonau_triple_overlap_disagg.csv")
 
 setnames(crs_agg,
   c("Principal gender equality", "Principal all climate", "Principal disability"),
