@@ -53,6 +53,11 @@ hist(dat$mitig_sig_conf)
 hist(dat$mitig_pri_conf)
 # End load ####
 
+# TODO: Add new vocabulary
+supplemental_vocab = c(
+  "clim"
+)
+
 # Fix known mislabels
 dat$adapt_sig[which(dat$adapt_sig > 2)] = 2
 dat$mitig_sig[which(dat$mitig_sig > 2)] = 2
