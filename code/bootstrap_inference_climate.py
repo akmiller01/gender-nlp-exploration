@@ -377,14 +377,10 @@ def map_columns(example):
     example['Climate keyword match'] = CLIMATE_REGEX.search(clean_text) is not None
 
     inputs = TOKENIZER(text, return_tensors="pt", truncation=True).to(DEVICE)
-    climate_model_pred, climate_model_conf = inference(MODEL, inputs)
-    example['Climate adaptation - significant objective'] = climate_model_pred[0]
+    _, climate_model_conf = inference(MODEL, inputs)
     example['Climate adaptation - significant objective'] = climate_model_conf[0]
-    example['Climate adaptation - principal objective'] = climate_model_pred[1]
     example['Climate adaptation - principal objective'] = climate_model_conf[1]
-    example['Climate mitigation - significant objective'] = climate_model_pred[2]
     example['Climate mitigation - significant objective'] = climate_model_conf[2]
-    example['Climate mitigation - principal objective'] = climate_model_pred[3]
     example['Climate mitigation - principal objective'] = climate_model_conf[3]
     return example
 
