@@ -5,7 +5,7 @@
 # login()
 
 import types
-from datasets import load_dataset, Dataset, concatenate_datasets
+from datasets import load_dataset
 from transformers import (
     AutoTokenizer,
     AutoModelForSequenceClassification,
@@ -18,9 +18,6 @@ from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 from transformers.modeling_outputs import SequenceClassifierOutput
 import evaluate
 import numpy as np
-import pandas as pd
-from collections import Counter
-import math
 
 from typing import Optional, Tuple, Union
 
@@ -170,16 +167,16 @@ model.class_weights = weights
 
 training_args = TrainingArguments(
     'curated-climate-weighted',
-    learning_rate=1e-6, # This can be tweaked depending on how loss progresses
+    learning_rate=1e-5, # This can be tweaked depending on how loss progresses
     per_device_train_batch_size=24, # These should be tweaked to match GPU VRAM
     per_device_eval_batch_size=24,
-    num_train_epochs=20,
+    num_train_epochs=5,
     weight_decay=0.01,
     evaluation_strategy='epoch',
     save_strategy='epoch',
     logging_strategy='epoch',
     load_best_model_at_end=True,
-    push_to_hub=False,
+    push_to_hub=True,
     save_total_limit=5,
 )
 
