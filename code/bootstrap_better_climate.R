@@ -98,7 +98,13 @@ supplemental_vocab = c(
   "energetica"
 )
 
+negative_vocab = c(
+  "no description",
+  "does not have"
+)
+
 supplemental_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(supplemental_vocab)))))
+negative_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(negative_vocab)))))
 
 supplemental_regex = paste0(
   "\\b",
@@ -106,11 +112,19 @@ supplemental_regex = paste0(
   "\\b"
 )
 
+negative_regex = paste0(
+  "\\b",
+  paste(negative_vocab, collapse="\\b|\\b"),
+  "\\b"
+)
+
 dat$supplemental_match = grepl(supplemental_regex, dat$clean_text, perl=T, ignore.case = T)
+dat$negative_match = grepl(negative_regex, dat$clean_text, perl=T, ignore.case = T)
 
 dat$match[which(dat$supplemental_match)] = "True"
+dat = subset(dat, !negative_match)
 
-dat[,c("clean_text", "supplemental_match")] = NULL
+dat[,c("clean_text", "supplemental_match", "negative_match")] = NULL
 
 # Fix known mislabels
 dat$adapt_sig[which(dat$adapt_sig > 2)] = 2
@@ -259,8 +273,8 @@ fp_dat = subset(fp_dat, adapt_sig == 0 & mitig_sig == 0)
 
 tn_a = which(
   negative_adaptation &
-    dat$adapt_sig_conf <= 0.0128 &
-    dat$adapt_pri_conf <= 0.0128
+    dat$adapt_sig_conf <= 0.0132 &
+    dat$adapt_pri_conf <= 0.0132
 )
 
 tn_m = which(
@@ -326,4 +340,24 @@ training_data$mitigation_label[which(training_data$mitig_sig == 2)] = "Principal
 
 keep = c("text", "adaptation_label", "mitigation_label")
 training_data = training_data[,keep]
+
+# Sort and calculate sequential string distance
+training_data = training_data[order(training_data$text),]
+training_data$dist = NA
+for(i in 1:(nrow(training_data) - 1)){
+  str_a = training_data[i,"text"]
+  str_b = training_data[i+1, "text"]
+  str_dist = adist(str_a, str_b)
+  str_dist_perc = str_dist / nchar(str_a)
+  training_data[i, "dist"] = str_dist_perc
+}
+
+# Drop close duplicates
+mean(training_data$dist <= 0.2, na.rm=T)
+training_data = subset(training_data, dist >= 0.2)
+training_data$dist = NULL
+
+table(training_data$adaptation_label)
+table(training_data$mitigation_label)
+
 fwrite(training_data, "large_data/curated_climate_training_data.csv")
