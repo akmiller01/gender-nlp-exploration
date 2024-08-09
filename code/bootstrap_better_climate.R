@@ -1,4 +1,4 @@
-list.of.packages <- c("data.table")
+list.of.packages <- c("data.table", "stringr")
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 lapply(list.of.packages, require, character.only=T)
@@ -16,6 +16,18 @@ lapply(list.of.packages, require, character.only=T)
 # Load ####
 wd = "~/git/gender-nlp-exploration/"
 setwd(wd)
+
+quotemeta <- function(string) {
+  str_replace_all(string, "(\\W)", "\\\\\\1")
+}
+
+remove_punct = function(string){
+  str_replace_all(string, "[[:punct:]]", " ")
+}
+
+collapse_whitespace = function(string){
+  str_replace_all(string, "\\s+", " ")
+}
 
 dat = read.csv(
   "large_data/iati_climate_predictions.csv",
@@ -53,10 +65,52 @@ hist(dat$mitig_sig_conf)
 hist(dat$mitig_pri_conf)
 # End load ####
 
-# TODO: Add new vocabulary
+#Add new vocabulary
+dat$clean_text = trimws(collapse_whitespace(remove_punct(tolower(dat$text))))
+
 supplemental_vocab = c(
-  "clim"
+  "clim",
+  "klimatanpassning",
+  "sequías",
+  "sequía",
+  "sequias",
+  "sequia",
+  "inundaciones",
+  "inun daciones",
+  "inundación",
+  "inundacion",
+  "gef",
+  "adaption",
+  "climateshot",
+  "landdegradatie",
+  "catastrophic",
+  "risk insurance",
+  "ndcs",
+  "global warming",
+  "cng",
+  "air",
+  "coal",
+  "cleaner",
+  "ozone",
+  "montreal",
+  "paris",
+  "kyoto",
+  "energetica"
 )
+
+supplemental_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(supplemental_vocab)))))
+
+supplemental_regex = paste0(
+  "\\b",
+  paste(supplemental_vocab, collapse="\\b|\\b"),
+  "\\b"
+)
+
+dat$supplemental_match = grepl(supplemental_regex, dat$clean_text, perl=T, ignore.case = T)
+
+dat$match[which(dat$supplemental_match)] = "True"
+
+dat[,c("clean_text", "supplemental_match")] = NULL
 
 # Fix known mislabels
 dat$adapt_sig[which(dat$adapt_sig > 2)] = 2
@@ -192,6 +246,14 @@ fp_pri_m = which(
     mitigation_principal_predicted & 
     dat$mitig_pri_conf >= 0.98
 )
+
+# Investigate false positives for new vocab
+all_fp = union(fp_sig_a, fp_sig_m)
+all_fp = union(all_fp, fp_pri_a)
+all_fp = union(all_fp, fp_pri_m)
+
+fp_dat = dat[all_fp,]
+fp_dat = subset(fp_dat, adapt_sig == 0 & mitig_sig == 0)
 
 # True negative with low confidence
 
