@@ -20,6 +20,7 @@ global MODEL
 TOKENIZER = AutoTokenizer.from_pretrained('alex-miller/ODABert', model_max_length=512)
 DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
 MODEL = AutoModelForSequenceClassification.from_pretrained("alex-miller/curated-climate-weighted")
+# MODEL = AutoModelForSequenceClassification.from_pretrained("alex-miller/iati-climate-multi-classifier-weighted2")
 MODEL = MODEL.to(DEVICE)
 
 
@@ -40,8 +41,12 @@ def preprocess_function(example):
     for unique_label in unique_labels:
         if adaptation_label == unique_label:
             labels[label2id[unique_label]] = 1.
+            # if adaptation_label == "Principal climate adaptation objective":
+            #     labels[label2id["Significant climate adaptation objective"]] = 1.
         if mitigation_label == unique_label:
             labels[label2id[unique_label]] = 1.
+            # if mitigation_label == "Principal climate mitigation objective":
+            #     labels[label2id["Significant climate mitigation objective"]] = 1.
     example['labels'] = labels
     return example
 
@@ -83,7 +88,6 @@ def run_inference(example):
 
 dataset = load_dataset("alex-miller/curated-iati-climate", split="test")
 dataset = dataset.map(preprocess_function, remove_columns=['adaptation_label', 'mitigation_label'])
-dataset = dataset.select(range(0, 100))
 dataset = dataset.map(run_inference)
 
 for unique_label in unique_labels:
