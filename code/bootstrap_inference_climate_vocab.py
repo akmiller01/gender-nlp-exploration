@@ -401,10 +401,13 @@ def inference(model, inputs):
     return predicted_classes, predicted_confidences
 
 
+def clean_text(example):
+    example['clean_text'] = remove_string_special_characters(example['text'])
+    return example
+
+
 def keyword_match(example, regex):
-    text = example['text']
-    clean_text = remove_string_special_characters(text)
-    return regex.search(clean_text) is not None
+    return regex.search(example['clean_text']) is not None
 
 
 def map_columns(example):
@@ -418,27 +421,13 @@ def map_columns(example):
 
 
 def main():
-    dataset = load_dataset("devinitorg/iati-policy-markers", split="train")
-
+    dataset = load_dataset("csv", data_files="large_data/iati_climate_predictions.csv", split="train")
+    dataset = dataset.map(clean_text, num_proc=8)
     dataset = dataset.filter(
         lambda example: 
-            (example["climate_adaptation"] or example["climate_mitigation"]) and
             (example["climate_adaptation_sig"] in [1, 2] or example["climate_mitigation_sig"] in [1, 2]) and
-            (example["text"] != "" and example["text"] is not None and len(example["text"]) > 10) and
             (keyword_match(example, CLIMATE_REGEX))
     )
-    cols_to_remove = dataset.column_names
-    cols_to_remove.remove("text")
-    cols_to_remove.remove("climate_adaptation_sig")
-    cols_to_remove.remove("climate_mitigation_sig")
-    dataset = dataset.remove_columns(cols_to_remove)
-
-    # De-duplicate
-    df = pd.DataFrame(dataset)
-    print(df.shape)
-    df = df.drop_duplicates(subset=['text'])
-    print(df.shape)
-    dataset = Dataset.from_pandas(df, preserve_index=False)
 
     # Vocab scores
     vocab_score_list = list()
@@ -454,13 +443,11 @@ def main():
         keyword_regex = re.compile(r'\b%s\b' % keyword, re.I)
         examples = dataset.filter(lambda example: keyword_match(example, keyword_regex))
         if examples.num_rows > 0:
-            inferenced_examples = examples.map(map_columns)
-            vocab_dict['s_a_score'] = np.mean(inferenced_examples['Climate adaptation - significant objective'])
-            vocab_dict['p_a_score'] = np.mean(inferenced_examples['Climate adaptation - principal objective'])
-            vocab_dict['s_m_score'] = np.mean(inferenced_examples['Climate mitigation - significant objective'])
-            vocab_dict['p_m_score'] = np.mean(inferenced_examples['Climate mitigation - principal objective'])
+            vocab_dict['s_a_score'] = np.mean(examples['Climate adaptation - significant objective'])
+            vocab_dict['p_a_score'] = np.mean(examples['Climate adaptation - principal objective'])
+            vocab_dict['s_m_score'] = np.mean(examples['Climate mitigation - significant objective'])
+            vocab_dict['p_m_score'] = np.mean(examples['Climate mitigation - principal objective'])
         vocab_score_list.append(vocab_dict)
-
 
 
     vocab_data = pd.DataFrame.from_records(vocab_score_list)

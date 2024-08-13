@@ -103,8 +103,219 @@ negative_vocab = c(
   "does not have"
 )
 
+strong_adaptation_vocab = c(
+  "météorologiques",
+  "adaptative",
+  "risk insurance",
+  "sécheresse",
+  "météorologique",
+  "disaster risk",
+  "meteorology",
+  "sequia",
+  "catastrophe",
+  "disaster",
+  "risk reduction",
+  "weather",
+  "meteorological",
+  "drought",
+  "flooding",
+  "drr",
+  "early warning",
+  "catastrophes",
+  "flood",
+  "disasters",
+  "farmer",
+  "floods",
+  "preparedness",
+  "adaption",
+  "rains",
+  "résilience",
+  "climatic",
+  "adaptive",
+  "resilience",
+  "climatiques",
+  "coping",
+  "crop",
+  "agroecological",
+  "tolerant",
+  "season",
+  "sols",
+  "sequías",
+  "agroecology",
+  "adaptation",
+  "depleted",
+  "watershed",
+  "catastrophic",
+  "seascape",
+  "drylands",
+  "farmers",
+  "rice",
+  "dessalement",
+  "sequía",
+  "sequía",
+  "harvest",
+  "cgiar",
+  "harvests",
+  "agricoles",
+  "drm",
+  "resilient",
+  "agricole",
+  "adapt",
+  "coastal",
+  "crops",
+  "ifad",
+  "lowlands",
+  "diversified",
+  "agriculture",
+  "inundaciones",
+  "ecosystemen",
+  "soil",
+  "agricultural",
+  "pastorales",
+  "ccnucc",
+  "cultivos",
+  "agro",
+  "remote sensing",
+  "écologiques",
+  "climat",
+  "flloca",
+  "cultures",
+  "environnementaux",
+  "zones",
+  "klimatanpassning",
+  "meteorológica",
+  "diversifying",
+  "water",
+  "desert",
+  "terres",
+  "naturelles",
+  "meteorologiques",
+  "satellite",
+  "farm",
+  "ocean",
+  "permaculture",
+  "climatique",
+  "zone",
+  "sequias",
+  "dryland",
+  "écosystèmes",
+  "marine",
+  "environnementales",
+  "grazing",
+  "mitigating",
+  "natural",
+  "ecological",
+  "désert",
+  "durables",
+  "durablement",
+  "climate",
+  "sea",
+  "farms",
+  "agri",
+  "ecosystems",
+  "ecology",
+  "agrícola",
+  "terre",
+  "depletion",
+  "desalination",
+  "agroforestry",
+  "montane",
+  "organic",
+  "cultivo",
+  "ecologique",
+  "vegetation",
+  "coffee",
+  "biodiversité",
+  "mangrove"
+)
+
+strong_mitigation_vocab = c(
+  "émissions",
+  "greening",
+  "carbon",
+  "clean",
+  "energi",
+  "lines",
+  "gaz",
+  "charcoal",
+  "recycling",
+  "fuel",
+  "énergie",
+  "cleaner",
+  "deforestation",
+  "energia",
+  "ghg",
+  "hydroelectric",
+  "railway",
+  "géothermique",
+  "recycle",
+  "decarbonization",
+  "montreal",
+  "efficiency",
+  "interconnexion",
+  "renouvelable",
+  "biomass",
+  "greenhouse",
+  "power",
+  "renouvelables",
+  "gases",
+  "cng",
+  "energy",
+  "solaire",
+  "gas",
+  "emission",
+  "emissions",
+  "railways",
+  "cement",
+  "hydropower",
+  "énergétique",
+  "cooking",
+  "wind",
+  "transmission",
+  "hydroelectriques",
+  "solar",
+  "emisiones",
+  "solaires",
+  "retrofitting",
+  "energetica",
+  "coal",
+  "geotermia",
+  "renewable",
+  "renewables",
+  "hydroélectrique",
+  "bioenergy",
+  "ozone",
+  "biomasa",
+  "redd",
+  "biomasse",
+  "electric",
+  "batteries",
+  "electricity",
+  "electrification",
+  "interconnection",
+  "électrique",
+  "grid",
+  "energie",
+  "grids",
+  "emisión",
+  "geothermal",
+  "electricité",
+  "energies",
+  "photovoltaic",
+  "electrique",
+  "battery",
+  "pv",
+  "mw",
+  "windpower",
+  "batterie",
+  "solarization",
+  "transmisión"
+)
+
 supplemental_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(supplemental_vocab)))))
 negative_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(negative_vocab)))))
+strong_adaptation_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(strong_adaptation_vocab)))))
+strong_mitigation_vocab = quotemeta(trimws(collapse_whitespace(remove_punct(tolower(strong_mitigation_vocab)))))
 
 supplemental_regex = paste0(
   "\\b",
@@ -118,8 +329,22 @@ negative_regex = paste0(
   "\\b"
 )
 
+adaptation_regex = paste0(
+  "\\b",
+  paste(strong_adaptation_vocab, collapse="\\b|\\b"),
+  "\\b"
+)
+
+mitigation_regex = paste0(
+  "\\b",
+  paste(strong_mitigation_vocab, collapse="\\b|\\b"),
+  "\\b"
+)
+
 dat$supplemental_match = grepl(supplemental_regex, dat$clean_text, perl=T, ignore.case = T)
 dat$negative_match = grepl(negative_regex, dat$clean_text, perl=T, ignore.case = T)
+dat$adaptation_match = grepl(adaptation_regex, dat$clean_text, perl=T, ignore.case = T)
+dat$mitigation_match = grepl(mitigation_regex, dat$clean_text, perl=T, ignore.case = T)
 
 dat$match[which(dat$supplemental_match)] = "True"
 dat = subset(dat, !negative_match)
@@ -283,6 +508,41 @@ tn_m = which(
     dat$mitig_pri_conf <= 0.01132
 )
 
+# Merge errors
+error_indices = c()
+to_union = c(
+  "fn_sig_a",
+  "fn_sig_m",
+  "fn_pri_a",
+  "fn_pri_m",
+  "fp_sig_a",
+  "fp_sig_m",
+  "fp_pri_a",
+  "fp_pri_m"
+)
+
+for(var_name in to_union){
+  error_indices = union(error_indices, get(var_name))
+}
+
+error_data = dat[error_indices,]
+
+# Check errors
+potentially_mislabeled_adaptation = which(
+  dat$adapt_sig == 0 & dat$adaptation_match & 
+    (dat$adapt_pri_conf > 0.75 | dat$adapt_sig_conf > 0.75)
+)
+
+# View(dat[potentially_mislabeled_adaptation,])
+
+potentially_mislabeled_mitigation = which(
+  dat$mitig_sig == 0 & dat$mitigation_match & 
+    (dat$mitig_pri_conf > 0.75 | dat$mitig_sig_conf > 0.75)
+)
+
+# View(dat[potentially_mislabeled_mitigation,])
+
+
 # Merge
 training_indices = c()
 to_union = c(
@@ -306,9 +566,16 @@ to_union = c(
   "tn_m"
 )
 
+to_diff = union(
+  potentially_mislabeled_adaptation,
+  potentially_mislabeled_mitigation
+)
+
 for(var_name in to_union){
   training_indices = union(training_indices, get(var_name))
 }
+
+training_indicies = setdiff(training_indices, to_diff)
 
 training_data = dat[training_indices,]
 t_neg_a = subset(training_data, adapt_sig == 0)
