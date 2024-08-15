@@ -18,53 +18,53 @@ collapse_whitespace = function(string){
   str_replace_all(string, "\\s+", " ")
 }
 
-# supplemental_disability_keywords = c(
-#   'albino',
-#   'albinism',
-#   'autism',
-#   'autistic',
-#   'chronic',
-#   'deformity',
-#   'deformities',
-#   'déficience',
-#   'difficult',
-#   'difficulty',
-#   'difficulties',
-#   'disable',
-#   'eye',
-#   'eyes',
-#   'handicapés',
-#   'handicapées',
-#   'helpage',
-#   'impaired',
-#   'impairment',
-#   'impairments',
-#   'inclusive',
-#   'parkinson'
-# )
+supplemental_disability_keywords = c(
+  'albino',
+  'albinism',
+  'autism',
+  'autistic',
+  'chronic',
+  'deformity',
+  'deformities',
+  'déficience',
+  'difficult',
+  'difficulty',
+  'difficulties',
+  'disable',
+  'eye',
+  'eyes',
+  'handicapés',
+  'handicapées',
+  'helpage',
+  'impaired',
+  'impairment',
+  'impairments',
+  'inclusive',
+  'parkinson'
+)
 
 crs = fread(paste0("large_data/crs_nonau_for_gender_climate_disability_predictions.csv"))
 original_names = names(crs)[1:95]
 
-# textual_cols_for_classification = c(
-#   "project_title",
-#   "short_description",
-#   "long_description"
-# )
-# 
-# crs = crs %>%
-#   unite(text, all_of(textual_cols_for_classification), sep=" ", na.rm=T, remove=F)
-# 
-# crs$text = trimws(collapse_whitespace(remove_punct(tolower(crs$text))))
-# supplemental_disability_regex = paste0(
-#   "\\b",
-#   paste(supplemental_disability_keywords, collapse="\\b|\\b"),
-#   "\\b"
-# )
-# crs$`Supplemental disability keyword match` = grepl(supplemental_disability_regex, crs$text, perl=T, ignore.case = T)
-# crs$`Disability keyword match` = crs$`Disability keyword match` | crs$`Supplemental disability keyword match`
-# 
-# crs[,c("text","Supplemental disability keyword match")] = NULL
+textual_cols_for_classification = c(
+  "project_title",
+  "short_description",
+  "long_description"
+)
+
+crs = crs %>%
+  unite(text, all_of(textual_cols_for_classification), sep=" ", na.rm=T, remove=F)
+
+crs$text = trimws(collapse_whitespace(remove_punct(tolower(crs$text))))
+supplemental_disability_regex = paste0(
+  "\\b",
+  paste(supplemental_disability_keywords, collapse="\\b|\\b"),
+  "\\b"
+)
+crs$`Supplemental disability keyword match` = grepl(supplemental_disability_regex, crs$text, perl=T, ignore.case = T)
+crs$`Disability keyword match` = crs$`Disability keyword match` | crs$`Supplemental disability keyword match`
+
+crs[,c("text","Supplemental disability keyword match")] = NULL
 
 # Set blanks to false and 0
 blanks = c("", "-")
@@ -170,12 +170,13 @@ keep = c(original_names,
         "Principal disability"
 )
 
-out_crs = subset(
-  crs, 
-  `Principal gender equality` |
-    `Principal all climate` |
-    `Principal disability`,select=keep
-)
+# out_crs = subset(
+#   crs, 
+#   `Principal gender equality` |
+#     `Principal all climate` |
+#     `Principal disability`,select=keep
+# )
+out_crs = crs[,keep]
 
 fwrite(out_crs,
        "large_data/crs_nonau_for_gender_climate_disability_automated.csv")
