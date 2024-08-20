@@ -111,6 +111,7 @@ climate_keywords = [
     'adapt',
     'adaptation',
     'adaptative',
+    'adaption',
     'adaptive',
     'afforestation',
     'agri',
@@ -123,6 +124,7 @@ climate_keywords = [
     'agroecology',
     'agroforestry',
     'agrícola',
+    'air',
     'ambiental',
     'anthracnose',
     'aquaponics',
@@ -145,6 +147,7 @@ climate_keywords = [
     'carbone',
     'catastrophe',
     'catastrophes',
+    'catastrophic',
     'catástrofe',
     'catástrofes',
     'ccnucc',
@@ -154,13 +157,18 @@ climate_keywords = [
     'chemin de fer',
     'chemins de fer',
     'clean',
+    'cleaner',
+    'clim',
     'climat',
     'climate',
+    'climateshot',
     'climatic',
     'climatico',
     'climatique',
     'climatiques',
     'climático',
+    'cng',
+    'coal',
     'coastal',
     'coffee',
     'compost',
@@ -232,6 +240,7 @@ climate_keywords = [
     'emisión',
     'emission',
     'emissions',
+    'energetica',
     'energetique',
     'energi',
     'energia',
@@ -271,9 +280,11 @@ climate_keywords = [
     'gaz',
     'gazów',
     'gcf',
+    'gef',
     'geotermia',
     'geothermal',
     'ghg',
+    'global warming',
     'grazing',
     'green',
     'greenhouse',
@@ -292,10 +303,19 @@ climate_keywords = [
     'ifad',
     'interconnection',
     'interconnexion',
-    'iucn', "l'électricité", 'land',
-    'lcf',
+    'inun daciones',
+    'inundacion',
+    'inundaciones',
+    'inundación',
+    'iucn',
+    'klimatanpassning',
+    'kyoto',
+    "l'électricité",
     'land',
+    'land',
+    'landdegradatie',
     'lands',
+    'lcf',
     'lignes',
     'limpio',
     'lines',
@@ -316,6 +336,7 @@ climate_keywords = [
     'mitigating',
     'mitigation',
     'montane',
+    'montreal',
     'mw',
     'météorologique',
     'météorologiques',
@@ -325,10 +346,13 @@ climate_keywords = [
     'nature',
     'naturelles',
     'ndc',
+    'ndcs',
     'ocean',
     'odnawialne',
     'odpadów',
     'organic',
+    'ozone',
+    'paris',
     'pastorales',
     'pays sec',
     'permaculture',
@@ -365,6 +389,7 @@ climate_keywords = [
     'reuse',
     'rice',
     'rio',
+    'risk insurance',
     'risk reduction',
     'rolnej',
     'rolniczej',
@@ -376,6 +401,11 @@ climate_keywords = [
     'seascape',
     'season',
     'sequestration',
+    'sequia',
+    'sequias',
+    'sequía',
+    'sequía',
+    'sequías',
     'soil',
     'solaire',
     'solaires',
@@ -390,7 +420,6 @@ climate_keywords = [
     'sustainable',
     'sustainably',
     'sustentablemente',
-    'sequía',
     'sécheresse',
     'terre',
     'terres',
@@ -630,7 +659,7 @@ def map_columns(example):
 
 def main():
     text_cols = ['text']
-    dataset = pd.read_csv("data/eth_budget_2014.csv")
+    dataset = pd.read_csv("data/eth_budget.csv")
     dataset_text = dataset[text_cols]
     # De-duplicate
     print(dataset_text.shape)
@@ -640,7 +669,7 @@ def main():
     dataset_text = dataset_text.map(map_columns)
     dataset_text = pd.DataFrame(dataset_text)
     dataset = pd.merge(dataset, dataset_text, on=text_cols, how="left")
-    dataset.to_csv('data/eth_budget_2014_predictions.csv', index=False)
+    dataset.to_csv('data/eth_budget_predictions.csv', index=False)
 
 
 if __name__ == '__main__':
