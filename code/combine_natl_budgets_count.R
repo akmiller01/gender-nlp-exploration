@@ -136,3 +136,5 @@ ggplot(subset(dat, label=="Disability"), aes(x=label, y=value, group=country, fi
     x="",
     fill=""
   )
+
+fwrite(dat, "data/natl_budgets_count.csv")

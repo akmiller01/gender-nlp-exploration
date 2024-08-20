@@ -7,6 +7,7 @@ wd = "~/git/gender-nlp-exploration/"
 setwd(wd)
 
 eth = fread("data/eth_budget_automated.csv")
+unique(eth$year)
 eth = eth[,.(value=sum(total, na.rm=T)), by=.(
   `Principal gender equality`,
   `Principal all climate`,
@@ -14,7 +15,9 @@ eth = eth[,.(value=sum(total, na.rm=T)), by=.(
 )]
 eth$total = sum(eth$value)
 eth$country = "Ethiopia"
+
 ken = fread("data/kenya_budget_automated.csv")
+unique(ken$year)
 ken = ken[,.(value=sum(value, na.rm=T)), by=.(
   `Principal gender equality`,
   `Principal all climate`,
@@ -23,6 +26,7 @@ ken = ken[,.(value=sum(value, na.rm=T)), by=.(
 ken$total = sum(ken$value)
 ken$country = "Kenya"
 uga = fread("large_data/uganda_budget_automated.csv")
+unique(uga$FinancialYear)
 uga = uga[,.(value.a=sum(Amount, na.rm=T), value.b=sum(Approved_Budget, na.rm=T)), by=.(
   `Principal gender equality`,
   `Principal all climate`,
@@ -125,3 +129,5 @@ ggplot(subset(dat, label=="Disability"), aes(x=label, y=percentage, group=countr
     x="",
     fill=""
   )
+
+fwrite(dat, "data/natl_budgets_value.csv")
