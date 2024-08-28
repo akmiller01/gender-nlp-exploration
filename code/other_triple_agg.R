@@ -14,10 +14,16 @@ crs_nonau_agg = crs_nonau[,.(usd_disbursement_deflated=sum(usd_disbursement_defl
 
 fwrite(crs_nonau_agg, "data/crs_nonau_region.csv")
 
-crs = fread("large_data/crs_nonau_for_gender_climate_disability_automated.csv")
+crs = fread("large_data/crs_for_gender_climate_disability_automated.csv")
 
 crs_agg = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
   year, `Principal gender equality`, `Principal all climate`, `Principal disability`, flow_name
 )]
 
 fwrite(crs_agg, "data/crs_au_flow.csv")
+
+crs_disagg = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
+  year, donor_name, recipient_name, `Principal gender equality`, `Principal all climate`, `Principal disability`, flow_name
+)]
+
+fwrite(crs_disagg, "data/crs_au_flow_disaggregated.csv")

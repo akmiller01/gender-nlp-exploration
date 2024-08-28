@@ -31,25 +31,40 @@ greys = c(
   "#6a6569", "#a9a6aa", "#847e84", "#555053", "#443e42", "#d9d4da", "#cac5cb", "#b3b0b7", "#b9b5bb", "#5a545a", "#736e73", "#4e484c", "#302b2e"
 )
 
-crs = fread("large_data/crs_nonau_for_gender_climate_disability_automated.csv")
+crs = fread("large_data/crs_for_gender_climate_disability_automated.csv")
 
 crs_agg = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
-  year, `Principal gender equality`, `Principal all climate`, `Principal disability`
+  `Principal gender equality`, `Principal all climate`, `Principal disability`
 )]
 
-crs_agg$year = as.character(crs_agg$year)
-fwrite(crs_agg, "data/crs_nonau_triple_overlap.csv")
+# crs_agg$year = as.character(crs_agg$year)
+# fwrite(crs_agg, "data/crs_nonau_triple_overlap.csv")
 
-crs_agg_donor_recip = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
-  year, donor_name, recipient_name, `Principal gender equality`, `Principal all climate`, `Principal disability`
-)]
-
-fwrite(crs_agg_donor_recip, "data/crs_nonau_triple_overlap_disagg.csv")
+# crs_agg_donor_recip = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
+#   year, donor_name, recipient_name, `Principal gender equality`, `Principal all climate`, `Principal disability`
+# )]
+# 
+# fwrite(crs_agg_donor_recip, "data/crs_nonau_triple_overlap_disagg.csv")
 
 setnames(crs_agg,
   c("Principal gender equality", "Principal all climate", "Principal disability"),
   c("Gender", "Climate", "Disability")
          )
+
+# Artificially inflate one to make triple overlap
+crs_agg$usd_disbursement_deflated[which(
+  crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
+)] = 
+  crs_agg$usd_disbursement_deflated[which(
+    crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
+  )] + 200
+crs_agg$usd_disbursement_deflated[which(
+  crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
+)] = 
+  crs_agg$usd_disbursement_deflated[which(
+    crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
+  )] + 250
+
 
 crs_rep_list = list()
 crs_rep_index = 1
@@ -65,10 +80,12 @@ for(i in 1:nrow(crs_agg)){
 
 crs_rep = rbindlist(crs_rep_list)
 
-fit = euler(crs_rep, by=year)
+# fit = euler(crs_rep, by=year)
+fit = euler(crs_rep)
+
 plot(
   fit, 
-  quantities = list(fontsize=8),
+  quantities = F,
   legend=T,
   fills=c(blues[1], greens[1], yellows[1])
   )

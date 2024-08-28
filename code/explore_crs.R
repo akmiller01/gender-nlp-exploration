@@ -43,7 +43,7 @@ supplemental_disability_keywords = c(
   'parkinson'
 )
 
-crs = fread(paste0("large_data/crs_nonau_for_gender_climate_disability_predictions.csv"))
+crs = fread(paste0("large_data/crs_for_gender_climate_disability_predictions.csv"))
 original_names = names(crs)[1:95]
 
 textual_cols_for_classification = c(
@@ -170,13 +170,14 @@ keep = c(original_names,
         "Principal disability"
 )
 
-# out_crs = subset(
-#   crs, 
-#   `Principal gender equality` |
-#     `Principal all climate` |
-#     `Principal disability`,select=keep
-# )
+out_crs_sub = subset(
+  crs,
+  `Principal gender equality` |
+    `Principal all climate` |
+    `Principal disability`,select=keep
+)
+sum(out_crs_sub$usd_disbursement_deflated)
 out_crs = crs[,keep]
 
 fwrite(out_crs,
-       "large_data/crs_nonau_for_gender_climate_disability_automated.csv")
+       "large_data/crs_for_gender_climate_disability_automated.csv")

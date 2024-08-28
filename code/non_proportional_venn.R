@@ -40,6 +40,7 @@ setnames(crs_agg,
          c("Principal gender equality", "Principal all climate", "Principal disability"),
          c("Gender", "Climate", "Disability")
 )
+fwrite(crs_agg, "data/venn_data.csv")
 
 # Make sets
 c_value = round(
