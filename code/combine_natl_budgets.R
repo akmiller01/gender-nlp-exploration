@@ -26,7 +26,7 @@ ken = ken[,.(value=sum(value, na.rm=T)), by=.(
 ken$total = sum(ken$value)
 ken$country = "Kenya"
 uga = fread("large_data/uganda_budget_automated.csv")
-unique(uga$FinancialYear)
+unique(c(uga$FinancialYear, uga$Fiscal_Year, uga$Year))
 uga = uga[,.(value.a=sum(Amount, na.rm=T), value.b=sum(Approved_Budget, na.rm=T)), by=.(
   `Principal gender equality`,
   `Principal all climate`,

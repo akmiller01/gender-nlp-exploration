@@ -5,7 +5,7 @@ lapply(list.of.packages, require, character.only=T)
 
 setwd("~/git/gender-nlp-exploration/")
 
-years = 2012:2015
+years = 2011:2015
 
 dat_list = list()
 dat_index = 1
@@ -33,7 +33,7 @@ for(year in years){
   dat_list[[dat_index]] = dat_recurrent
   dat_index = dat_index + 1
   
-  if(year != 2015){
+  if(!year %in%  c(2011,2015)){
     dat_capital = read.xlsx(
       filename,
       sheet="CAPITAL in AMHAric",
