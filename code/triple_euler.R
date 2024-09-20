@@ -34,7 +34,7 @@ greys = c(
 crs = fread("large_data/crs_for_gender_climate_disability_automated.csv")
 
 crs_agg = crs[,.(usd_disbursement_deflated=sum(usd_disbursement_deflated, na.rm=T)),by=.(
-  `Principal gender equality`, `Principal all climate`, `Principal disability`
+  year, `Principal gender equality`, `Principal all climate`, `Principal disability`
 )]
 
 # crs_agg$year = as.character(crs_agg$year)
@@ -52,18 +52,18 @@ setnames(crs_agg,
          )
 
 # Artificially inflate one to make triple overlap
-crs_agg$usd_disbursement_deflated[which(
-  crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
-)] = 
-  crs_agg$usd_disbursement_deflated[which(
-    crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
-  )] + 200
-crs_agg$usd_disbursement_deflated[which(
-  crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
-)] = 
-  crs_agg$usd_disbursement_deflated[which(
-    crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
-  )] + 250
+# crs_agg$usd_disbursement_deflated[which(
+#   crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
+# )] = 
+#   crs_agg$usd_disbursement_deflated[which(
+#     crs_agg$Disability & crs_agg$Climate & !crs_agg$Gender
+#   )] + 200
+# crs_agg$usd_disbursement_deflated[which(
+#   crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
+# )] = 
+#   crs_agg$usd_disbursement_deflated[which(
+#     crs_agg$Disability & crs_agg$Gender & !crs_agg$Climate
+#   )] + 250
 
 
 crs_rep_list = list()
@@ -80,8 +80,8 @@ for(i in 1:nrow(crs_agg)){
 
 crs_rep = rbindlist(crs_rep_list)
 
-# fit = euler(crs_rep, by=year)
-fit = euler(crs_rep)
+fit = euler(crs_rep, by=year)
+# fit = euler(crs_rep)
 
 plot(
   fit, 

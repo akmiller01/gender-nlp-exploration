@@ -17,6 +17,9 @@ eth$total = sum(eth$value)
 eth$country = "Ethiopia"
 
 ken = fread("data/kenya_budget_automated.csv")
+ken$number = sapply(strsplit(ken$program, split=" "), `[[`, 1)
+ken$aggregate = endsWith(ken$number, "000")
+ken = subset(ken, !aggregate)
 unique(ken$year)
 ken = ken[,.(value=sum(value, na.rm=T)), by=.(
   `Principal gender equality`,
