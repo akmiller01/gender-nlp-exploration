@@ -41,7 +41,17 @@ crs$health = crs$sector_name %in% c(
   "I.2.a. Health, General"
 )
 
+gender_sector_table = data.table(table(subset(crs, `Principal gender equality`)$sector_name))
+gender_sector_table = gender_sector_table[order(-gender_sector_table$N),]
+
+aid_debt_table = data.table(crs)[,.(aid_debt_ratio=(sum(usd_disbursement_deflated, na.rm=T)/sum(usd_commitment_deflated, na.rm=T))), by=.(sector_name)]
+aid_debt_table = aid_debt_table[order(aid_debt_table$aid_debt_ratio),]
+
 crs$commitment_year = as.numeric(substr(crs$commitment_date, 1, 4))
+
+short_term = subset(crs, year == commitment_year)
+aid_debt_table_short = data.table(short_term)[,.(aid_debt_ratio=(sum(usd_disbursement_deflated, na.rm=T)/sum(usd_commitment_deflated, na.rm=T))), by=.(sector_name)]
+aid_debt_table_short = aid_debt_table_short[order(aid_debt_table_short$aid_debt_ratio),]
 
 health_disb = sum(subset(crs, health & commitment_year %in% c(2018:2022))$usd_disbursement_deflated, na.rm=T)
 health_comm = sum(subset(crs, health & commitment_year %in% c(2018:2022))$usd_commitment_deflated, na.rm=T)
@@ -57,6 +67,26 @@ label_percent()(gender_disb / gender_comm)
 
 gender_health_disb = sum(subset(crs, `Principal gender equality` & health & commitment_year %in% c(2018:2022))$usd_disbursement_deflated, na.rm=T)
 gender_health_comm = sum(subset(crs, `Principal gender equality` & health & commitment_year %in% c(2018:2022))$usd_commitment_deflated, na.rm=T)
+dollar(gender_health_disb * 1e6)
+dollar(gender_health_comm * 1e6)
+label_percent()(gender_health_disb / gender_health_comm)
+
+crs_2022 = subset(crs, year == 2022 & commitment_year == 2022)
+
+health_disb = sum(subset(crs_2022, health)$usd_disbursement_deflated, na.rm=T)
+health_comm = sum(subset(crs_2022, health)$usd_commitment_deflated, na.rm=T)
+dollar(health_disb * 1e6)
+dollar(health_comm * 1e6)
+label_percent()(health_disb / health_comm)
+
+gender_disb = sum(subset(crs_2022, `Principal gender equality`)$usd_disbursement_deflated, na.rm=T)
+gender_comm = sum(subset(crs_2022, `Principal gender equality`)$usd_commitment_deflated, na.rm=T)
+dollar(gender_disb * 1e6)
+dollar(gender_comm * 1e6)
+label_percent()(gender_disb / gender_comm)
+
+gender_health_disb = sum(subset(crs_2022, `Principal gender equality` & health)$usd_disbursement_deflated, na.rm=T)
+gender_health_comm = sum(subset(crs_2022, `Principal gender equality` & health)$usd_commitment_deflated, na.rm=T)
 dollar(gender_health_disb * 1e6)
 dollar(gender_health_comm * 1e6)
 label_percent()(gender_health_disb / gender_health_comm)
